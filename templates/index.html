@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BrandVoice — Tweet Generator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar"><div class="brandmark">✦ BrandVoice</div></header>
+  <main class="layout">
+    <section class="hero">
+      <p class="eyebrow">YOUR BRAND, YOUR VOICE</p>
+      <h1>Turn brand ideas<br><span>into conversations.</span></h1>
+      <p class="intro">Describe a brand and campaign. Get a voice snapshot and 10 varied tweet ideas in seconds.</p>
+      <div class="feature-row"><span>✦ Voice summary</span><span>✦ 10 tweet ideas</span><span>✦ Copy-ready</span></div>
+    </section>
+    <section class="panel">
+      <h2>Tell us about your brand</h2>
+      <p class="muted">Brand name, industry and product details are flexible. Fill in what you know.</p>
+      {% if error %}<div class="error">{{ error }}</div>{% endif %}
+      <form method="post">
+        <label>Brand name<input name="brand" placeholder="e.g. Zomato"></label>
+        <div class="two-col">
+          <label>Industry / category<input name="industry" placeholder="e.g. Food delivery"></label>
+          <label>Campaign objective
+            <select name="objective">
+              <option value="Engagement">Engagement</option>
+              <option value="Promotion">Promotion</option>
+              <option value="Brand awareness">Brand awareness</option>
+              <option value="Product launch">Product launch</option>
+              <option value="Education / value">Education / value</option>
+            </select>
+          </label>
+        </div>
+        <label>Products or services<textarea name="products" rows="3" placeholder="What does the brand offer? Who benefits?"></textarea></label>
+        <label>Preferred tone 
+          <select name="tone">
+            <option value="">Infer from the brand details</option>
+            <option>Witty and conversational</option><option>Premium and minimal</option>
+            <option>Bold and energetic</option><option>Warm and friendly</option>
+            <option>Informative and professional</option><option>Playful and meme-aware</option>
+          </select>
+        </label>
+        <label>Example posts <small>Optional — paste 1–5 posts to guide the voice</small><textarea name="examples" rows="3" placeholder="Paste public brand posts here for a closer style match."></textarea></label>
+        <button type="submit">Generate 10 tweets <span>↗</span></button>
+      </form>
+      <p class="fineprint">This tool infers a voice from the details and examples you provide. It does not automatically scrape social media.</p>
+    </section>
+    {% if result %}
+    <section class="results">
+      <div class="result-heading"><div><p class="eyebrow">VOICE SNAPSHOT</p><h2>Your brand voice</h2></div><button class="secondary" onclick="copyAll()">Copy all tweets</button></div>
+      <ul class="voice-list">{% for item in result.voice_summary %}<li>{{ item }}</li>{% endfor %}</ul>
+      <div class="result-heading tweets-heading"><div><p class="eyebrow">READY TO ADAPT</p><h2>10 tweet ideas</h2></div></div>
+      <div class="tweet-grid">
+        {% for tweet in result.tweets %}
+        <article class="tweet-card">
+          <div class="tweet-meta"><span class="tweet-number">{{ "%02d"|format(loop.index) }}</span><span class="tag">{{ tweet.type }}</span></div>
+          <p class="tweet-text">{{ tweet.text }}</p>
+          <div class="tweet-footer"><span>{{ tweet.text|length }} characters</span><button class="copy-one" data-copy="{{ tweet.text|e }}">Copy tweet</button></div>
+        </article>
+        {% endfor %}
+      </div>
+      <script>
+        document.querySelectorAll('.copy-one').forEach(button => button.addEventListener('click', async () => {
+          await navigator.clipboard.writeText(button.dataset.copy);
+          button.textContent = 'Copied!';
+          setTimeout(() => button.textContent = 'Copy tweet', 1200);
+        }));
+        async function copyAll() {
+          const tweets = [...document.querySelectorAll('.tweet-text')].map((el, i) => `${i+1}. ${el.innerText}`).join('\\n\\n');
+          await navigator.clipboard.writeText(tweets);
+          document.querySelector('.secondary').textContent = 'Copied!';
+          setTimeout(() => document.querySelector('.secondary').textContent = 'Copy all tweets', 1200);
+        }
+      </script>
+    </section>
+    {% endif %}
+    <footer>BrandVoice · AI-generated drafts should be reviewed before publishing.</footer>
+  </main>
+</body>
+</html>
